@@ -172,5 +172,89 @@ void main() {
           skip: 'PBKDF2 60万回イテレーションのため実行時間が長い。'
               'ローカル実機で確認する場合はskipを外してください。');
     });
+
+    // --- Isolate対応 非同期メソッド テスト ---
+    group('deriveKeyAsync (Isolate)', () {
+      test('同期版と同じ結果を返す', () async {
+        final salt = Uint8List.fromList(List.filled(32, 0x01));
+        final syncKey = CryptoService.deriveKey('testpassword', salt);
+        final asyncKey =
+            await CryptoService.deriveKeyAsync('testpassword', salt);
+        expect(asyncKey, equals(syncKey));
+      },
+          skip: 'PBKDF2 60万回イテレーションのため実行時間が長い。'
+              'ローカル実機で確認する場合はskipを外してください。');
+
+      test('Futureを返す（非同期）', () {
+        final salt = Uint8List.fromList(List.filled(32, 0x01));
+        final result = CryptoService.deriveKeyAsync('test', salt);
+        expect(result, isA<Future<Uint8List>>());
+      },
+          skip: 'PBKDF2 60万回イテレーションのため実行時間が長い。'
+              'ローカル実機で確認する場合はskipを外してください。');
+    });
+
+    group('encryptTextAsync / decryptTextAsync (Isolate)', () {
+      test('暗号化→復号化で元のテキストが復元される', () async {
+        const password = 'masterpassword123';
+        const plainText = 'sk-test-abcdef12345';
+
+        final encrypted =
+            await CryptoService.encryptTextAsync(plainText, password);
+        final decrypted =
+            await CryptoService.decryptTextAsync(encrypted, password);
+
+        expect(decrypted, plainText);
+      },
+          skip: 'PBKDF2 60万回イテレーションのため実行時間が長い。'
+              'ローカル実機で確認する場合はskipを外してください。');
+
+      test('同期版encryptの結果をasync decryptで復号できる', () async {
+        const password = 'testpass12345678';
+        const plainText = 'cross-version-test';
+
+        final encrypted = CryptoService.encryptText(plainText, password);
+        final decrypted =
+            await CryptoService.decryptTextAsync(encrypted, password);
+
+        expect(decrypted, plainText);
+      },
+          skip: 'PBKDF2 60万回イテレーションのため実行時間が長い。'
+              'ローカル実機で確認する場合はskipを外してください。');
+    });
+
+    group('hashPasswordAsync / verifyPasswordAsync (Isolate)', () {
+      test('同期版と同じハッシュを生成する', () async {
+        final salt = Uint8List.fromList(List.filled(32, 0xCC));
+        final syncHash = CryptoService.hashPassword('mypassword', salt);
+        final asyncHash =
+            await CryptoService.hashPasswordAsync('mypassword', salt);
+        expect(asyncHash, equals(syncHash));
+      },
+          skip: 'PBKDF2 60万回イテレーションのため実行時間が長い。'
+              'ローカル実機で確認する場合はskipを外してください。');
+
+      test('正しいパスワードでasync検証成功', () async {
+        final salt = Uint8List.fromList(List.filled(32, 0xDD));
+        final hash =
+            await CryptoService.hashPasswordAsync('correct', salt);
+        final result =
+            await CryptoService.verifyPasswordAsync('correct', hash, salt);
+        expect(result, true);
+      },
+          skip: 'PBKDF2 60万回イテレーションのため実行時間が長い。'
+              'ローカル実機で確認する場合はskipを外してください。');
+
+      test('間違ったパスワードでasync検証失敗', () async {
+        final salt = Uint8List.fromList(List.filled(32, 0xDD));
+        final hash =
+            await CryptoService.hashPasswordAsync('correct', salt);
+        final result =
+            await CryptoService.verifyPasswordAsync('wrong', hash, salt);
+        expect(result, false);
+      },
+          skip: 'PBKDF2 60万回イテレーションのため実行時間が長い。'
+              'ローカル実機で確認する場合はskipを外してください。');
+    });
   });
 }

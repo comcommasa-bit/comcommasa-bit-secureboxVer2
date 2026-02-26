@@ -46,20 +46,25 @@ class BackupService {
 
   /// 全データを暗号化してJSON文字列にエクスポート
   ///
-  /// 返り値: 暗号化されたバックアップデータ文字列
+  /// 返り値: 暗号化されたバックアップデータ文字列。
+  /// PBKDF2はIsolateで実行しUIをブロックしない
   static Future<String> exportToString(String masterPassword) async {
     final allData = await StorageService.exportAll();
     final jsonString = jsonEncode(allData);
-    final encrypted = CryptoService.encryptText(jsonString, masterPassword);
+    final encrypted =
+        await CryptoService.encryptTextAsync(jsonString, masterPassword);
     return encrypted;
   }
 
   /// 暗号化されたJSON文字列からデータをインポート
+  ///
+  /// PBKDF2はIsolateで実行しUIをブロックしない
   static Future<void> importFromString(
     String encryptedData,
     String masterPassword,
   ) async {
-    final jsonString = CryptoService.decryptText(encryptedData, masterPassword);
+    final jsonString =
+        await CryptoService.decryptTextAsync(encryptedData, masterPassword);
     final List<dynamic> decoded = jsonDecode(jsonString);
     final data = decoded.map((e) => Map<String, dynamic>.from(e)).toList();
     await StorageService.importAll(data);

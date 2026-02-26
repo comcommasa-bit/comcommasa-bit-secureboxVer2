@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:isolate';
 import 'dart:math';
 import 'dart:typed_data';
 
@@ -9,11 +10,14 @@ import '../config/constants.dart';
 
 /// 暗号化・復号化サービス
 ///
-/// AES-256-GCM + PBKDF2鍵導出を使用してデータを暗号化・復号化する
+/// AES-256-CBC + PBKDF2鍵導出を使用してデータを暗号化・復号化する。
+/// PBKDF2（60万回イテレーション）は重い計算のため、非同期版メソッド
+/// （deriveKeyAsync等）はIsolateで実行しUIスレッドをブロックしない。
 class CryptoService {
   /// マスターパスワードからAES暗号化キーを導出する
   ///
   /// PBKDF2-HMAC-SHA256を使用、60万回イテレーション
+  /// 注意: UIスレッドをブロックするため、通常は [deriveKeyAsync] を使用すること
   static Uint8List deriveKey(String password, Uint8List salt) {
     final passwordBytes = utf8.encode(password);
     final hmacSha256 = Hmac(sha256, passwordBytes);
@@ -136,5 +140,39 @@ class CryptoService {
       String password, String storedHash, Uint8List salt) {
     final hash = hashPassword(password, salt);
     return hash == storedHash;
+  }
+
+  // --- Isolate対応 非同期メソッド ---
+  // PBKDF2の60万回イテレーションは数秒かかるため、
+  // Isolate.run() で別スレッドに逃がしてUIをブロックしない
+
+  /// [deriveKey] のIsolate版。UIスレッドをブロックしない
+  static Future<Uint8List> deriveKeyAsync(
+      String password, Uint8List salt) {
+    return Isolate.run(() => deriveKey(password, salt));
+  }
+
+  /// [encryptText] のIsolate版。UIスレッドをブロックしない
+  static Future<String> encryptTextAsync(
+      String plainText, String password) {
+    return Isolate.run(() => encryptText(plainText, password));
+  }
+
+  /// [decryptText] のIsolate版。UIスレッドをブロックしない
+  static Future<String> decryptTextAsync(
+      String encryptedText, String password) {
+    return Isolate.run(() => decryptText(encryptedText, password));
+  }
+
+  /// [hashPassword] のIsolate版。UIスレッドをブロックしない
+  static Future<String> hashPasswordAsync(
+      String password, Uint8List salt) {
+    return Isolate.run(() => hashPassword(password, salt));
+  }
+
+  /// [verifyPassword] のIsolate版。UIスレッドをブロックしない
+  static Future<bool> verifyPasswordAsync(
+      String password, String storedHash, Uint8List salt) {
+    return Isolate.run(() => verifyPassword(password, storedHash, salt));
   }
 }

@@ -28,10 +28,11 @@ class AuthService {
 
   /// マスターパスワードを設定（初回セットアップ）
   ///
-  /// パスワードそのものは保存しない。ハッシュとソルトのみ保存
+  /// パスワードそのものは保存しない。ハッシュとソルトのみ保存。
+  /// PBKDF2はIsolateで実行しUIをブロックしない
   static Future<void> setMasterPassword(String password) async {
     final salt = CryptoService.generateSalt();
-    final hash = CryptoService.hashPassword(password, salt);
+    final hash = await CryptoService.hashPasswordAsync(password, salt);
 
     await _secureStorage.write(key: _keyPasswordHash, value: hash);
     await _secureStorage.write(
@@ -41,6 +42,8 @@ class AuthService {
   }
 
   /// マスターパスワードを検証
+  ///
+  /// PBKDF2はIsolateで実行しUIをブロックしない
   static Future<bool> verifyMasterPassword(String password) async {
     final storedHash = await _secureStorage.read(key: _keyPasswordHash);
     final storedSaltBase64 = await _secureStorage.read(key: _keyPasswordSalt);
@@ -48,7 +51,7 @@ class AuthService {
     if (storedHash == null || storedSaltBase64 == null) return false;
 
     final salt = base64Decode(storedSaltBase64);
-    return CryptoService.verifyPassword(
+    return CryptoService.verifyPasswordAsync(
       password,
       storedHash,
       salt,
