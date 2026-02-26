@@ -329,34 +329,42 @@ securebox/
 
 ---
 
-## 開発順序
+## 開発順序・進捗
 
-### フェーズ1: 基盤（独立して完成可能）
-1. **constants.dart** - 設定定義
-2. **key_model.dart** - データモデル
-3. **crypto_service.dart** - 暗号化機能
-4. **toast.dart** - 通知機能
-5. **validators.dart** - バリデーション
-6. **helpers.dart** - ヘルパー関数
+### フェーズ1: 基盤（独立して完成可能） ✅ 済
+1. **constants.dart** - 設定定義 ✅
+2. **key_model.dart** - データモデル ✅
+3. **crypto_service.dart** - 暗号化機能 ✅
+4. **toast.dart** - 通知機能 ✅
+5. **validators.dart** - バリデーション ✅
+6. **helpers.dart** - ヘルパー関数 ✅
 
-### フェーズ2: コア機能（基盤依存）
-7. **storage_service.dart** - データ保存（crypto依存）
-8. **search_service.dart** - 検索機能
+### フェーズ2: コア機能（基盤依存） ✅ 済
+7. **storage_service.dart** - データ保存（crypto依存） ✅
+8. **search_service.dart** - 検索機能 ✅
 
-### フェーズ3: UI（コア機能依存）
-9. **key_list_item.dart** - リストアイテムウィジェット
-10. **key_detail_card.dart** - 詳細カードウィジェット
-11. **list_screen.dart** - 一覧画面（storage, search依存）
-12. **detail_screen.dart** - 詳細画面（storage依存）
-13. **edit_screen.dart** - 編集画面（storage依存）
+### フェーズ3: UI（コア機能依存） ✅ 済
+9. **key_list_item.dart** - リストアイテムウィジェット ✅
+10. **key_detail_card.dart** - 詳細カードウィジェット ✅
+11. **list_screen.dart** - 一覧画面（storage, search依存） ✅
+12. **detail_screen.dart** - 詳細画面（storage依存） ✅
+13. **edit_screen.dart** - 編集画面（storage依存） ✅
 
-### フェーズ4: 高度な機能
+### フェーズ4: 高度な機能 ⬜ 未着手
 14. **auth_service.dart** - 生体認証
 15. **backup_service.dart** - バックアップ（storage, crypto依存）
 
-### フェーズ5: 統合
-16. **main.dart** - 全体統合・ルーティング
-17. 最終調整・テスト
+### フェーズ5: 統合 ✅ 済（基本部分のみ）
+16. **main.dart** - 全体統合・ルーティング ✅
+17. 最終調整・テスト ⬜（実機確認が必要）
+
+### バックエンド（Stripe決済） ✅ 済
+- `api/stripe-webhook.js` - Webhook受信 ✅
+- `api/create-checkout.js` - 決済ページ作成 ✅
+- `vercel.json` - Vercel設定 ✅
+- `package.json` - 依存関係 ✅
+- `.env.example` - 環境変数サンプル ✅
+- `BACKEND-README.md` - 設定手順 ✅
 
 ---
 
@@ -414,6 +422,39 @@ Future<bool> saveKey(KeyModel key, String password) async {
 1. **Unit Test**: 各サービス・関数の単体テスト
 2. **Widget Test**: UI要素のテスト
 3. **Integration Test**: 画面遷移・全体フローのテスト
+
+### テストファイル進捗
+
+| ファイル | 状態 | 備考 |
+|---|---|---|
+| `test/models/key_model_test.dart` | ✅ 済 | JSON/Map変換、copyWith |
+| `test/services/search_service_test.dart` | ✅ 済 | キーワード・カテゴリ検索 |
+| `test/services/crypto_service_test.dart` | ✅ 済 | 下記⚠️注意あり |
+| `test/services/storage_service_test.dart` | ✅ 済 | 下記⚠️注意あり |
+| `test/widgets/key_list_item_test.dart` | ✅ 済 | ウィジェット描画・タップ |
+| `test/services/backup_service_test.dart` | ⬜ 未作成 | backup_service.dart 実装後に作成 |
+
+### ⚠️ テスト実行時の注意
+
+#### crypto_service_test.dart
+- **PBKDF2が60万回イテレーションのため、暗号化関連テストはデフォルト `skip` にしてある**
+- ローカル実機で確認する場合は各テストの `skip:` 引数を削除して実行
+- CI環境では時間がかかりすぎるため、イテレーション回数を下げたテスト用定数の導入を検討
+
+#### storage_service_test.dart
+- **sqflite は実機/エミュレータ依存のため、DB操作テストはIntegration Testスタブ**
+- PC上で動かすには `sqflite_common_ffi` パッケージを `dev_dependencies` に追加し、setUp で `databaseFactory = databaseFactoryFfi` を設定
+- 現在はKeyModelのシリアライズと定数の検証テストのみ実行可能
+
+#### 実行コマンド
+```bash
+# 全テスト実行（skipのものは自動スキップ）
+flutter test
+
+# 特定テストのみ
+flutter test test/models/key_model_test.dart
+flutter test test/widgets/key_list_item_test.dart
+```
 
 ---
 
@@ -553,12 +594,46 @@ dart analyze          # 静的解析
 
 ## 次のステップ
 
-1. Flutter環境構築
-2. プロジェクト作成（`flutter create securebox`）
-3. 依存パッケージ追加（`pubspec.yaml`）
-4. フェーズ1から順番に実装開始
+1. ~~Flutter環境構築~~ ✅
+2. ~~プロジェクト作成~~ ✅（手動でディレクトリ構造作成済み。`flutter create` は未実行）
+3. ~~依存パッケージ追加（`pubspec.yaml`）~~ ✅
+4. ~~フェーズ1〜3, 5 基本実装~~ ✅
+5. **ローカルで `flutter pub get` を実行**（必須・未実施）
+6. **ローカルで `flutter test` を実行して動作確認**（未実施）
+7. **フェーズ4: auth_service.dart（生体認証）を実装**
+8. **フェーズ4: backup_service.dart（バックアップ）を実装**
+9. **実機/エミュレータでアプリ起動確認**
+10. **暗号化の実機パフォーマンス確認**（PBKDF2 60万回が重い場合、isolateで別スレッド実行に変更）
+
+---
+
+## 実装メモ（引き継ぎ用）
+
+### crypto_service.dart の実装詳細
+- AES-256-**CBC**（AESMode.cbc）で実装済み。設計書にはGCMと記載があるが、`encrypt` パッケージのGCMサポート状況を確認して必要なら変更
+- PBKDF2は手動実装（`crypto` パッケージの Hmac を利用）
+- 暗号化結果のフォーマット: `base64(salt):base64(iv):base64(ciphertext)`
+
+### storage_service.dart の実装詳細
+- static メソッドのみのシングルトンパターン
+- `insertKey` に `isPro` フラグあり（デフォルト false = 無料版制限あり）
+- `exportAll` / `importAll` でバックアップ・復元に対応済み
+
+### key_detail_card.dart の実装詳細
+- キー値は「表示」ボタンで3秒間だけ表示、自動で非表示に戻る
+- コピーボタンでクリップボードにコピー + トースト通知
+
+### pubspec.yaml の追加パッケージ
+- `intl` — helpers.dart の日付フォーマットで使用
+- `path` — storage_service.dart のDBパス生成で使用
+
+### .gitignore に追加済み
+- Flutter関連: `.dart_tool/`, `.flutter-plugins`, `pubspec.lock` 等
+- Node関連: `node_modules/`
+- 環境変数: `.env`
 
 ---
 
 **このファイルは常に最新状態に保つこと。**
 **仕様変更があればこのファイルを更新。**
+**開発が進んだら進捗ステータス（✅/⬜）を更新すること。**
