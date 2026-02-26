@@ -1,0 +1,29 @@
+name: securebox
+description: パスワード・APIキーを安全に保管するアプリ
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  sqflite: ^2.3.0
+  encrypt: ^5.0.3
+  crypto: ^3.0.3
+  local_auth: ^2.1.7
+  google_sign_in: ^6.1.5
+  googleapis: ^13.0.0
+  flutter_secure_storage: ^9.0.0
+  http: ^1.1.0
+  path: ^1.8.3
+  intl: ^0.19.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true

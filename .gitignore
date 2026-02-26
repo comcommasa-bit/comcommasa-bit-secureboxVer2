@@ -32,3 +32,16 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
+# Flutter
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+pubspec.lock
+
+# Node modules (backend)
+node_modules/
+
+# Environment files
+.env
