@@ -350,9 +350,9 @@ securebox/
 12. **detail_screen.dart** - 詳細画面（storage依存） ✅
 13. **edit_screen.dart** - 編集画面（storage依存） ✅
 
-### フェーズ4: 高度な機能 ⬜ 未着手
-14. **auth_service.dart** - 生体認証
-15. **backup_service.dart** - バックアップ（storage, crypto依存）
+### フェーズ4: 高度な機能 ✅ 済
+14. **auth_service.dart** - 生体認証 ✅
+15. **backup_service.dart** - バックアップ（storage, crypto依存） ✅
 
 ### フェーズ5: 統合 ✅ 済（基本部分のみ）
 16. **main.dart** - 全体統合・ルーティング ✅
@@ -361,6 +361,8 @@ securebox/
 ### バックエンド（Stripe決済） ✅ 済
 - `api/stripe-webhook.js` - Webhook受信 ✅
 - `api/create-checkout.js` - 決済ページ作成 ✅
+- `__tests__/create-checkout.test.js` - Checkoutテスト ✅（Jest, 5テスト）
+- `__tests__/stripe-webhook.test.js` - Webhookテスト ✅（Jest, 10テスト）
 - `vercel.json` - Vercel設定 ✅
 - `package.json` - 依存関係 ✅
 - `.env.example` - 環境変数サンプル ✅
@@ -432,7 +434,9 @@ Future<bool> saveKey(KeyModel key, String password) async {
 | `test/services/crypto_service_test.dart` | ✅ 済 | 下記⚠️注意あり |
 | `test/services/storage_service_test.dart` | ✅ 済 | 下記⚠️注意あり |
 | `test/widgets/key_list_item_test.dart` | ✅ 済 | ウィジェット描画・タップ |
-| `test/services/backup_service_test.dart` | ⬜ 未作成 | backup_service.dart 実装後に作成 |
+| `test/services/backup_service_test.dart` | ⬜ 未作成 | Google Drive モック必要。ローカルexport/importは単体テスト可 |
+| `__tests__/create-checkout.test.js` | ✅ 済 | Jest, 5テスト合格 |
+| `__tests__/stripe-webhook.test.js` | ✅ 済 | Jest, 10テスト合格 |
 
 ### ⚠️ テスト実行時の注意
 
@@ -600,10 +604,12 @@ dart analyze          # 静的解析
 4. ~~フェーズ1〜3, 5 基本実装~~ ✅
 5. **ローカルで `flutter pub get` を実行**（必須・未実施）
 6. **ローカルで `flutter test` を実行して動作確認**（未実施）
-7. **フェーズ4: auth_service.dart（生体認証）を実装**
-8. **フェーズ4: backup_service.dart（バックアップ）を実装**
-9. **実機/エミュレータでアプリ起動確認**
-10. **暗号化の実機パフォーマンス確認**（PBKDF2 60万回が重い場合、isolateで別スレッド実行に変更）
+7. ~~フェーズ4: auth_service.dart（生体認証）を実装~~ ✅
+8. ~~フェーズ4: backup_service.dart（バックアップ）を実装~~ ✅
+9. ~~Stripe APIテスト作成~~ ✅（Jest, 全15テスト合格）
+10. **実機/エミュレータでアプリ起動確認**
+11. **暗号化の実機パフォーマンス確認**（PBKDF2 60万回が重い場合、isolateで別スレッド実行に変更）
+12. **main.dart にauth_service組み込み**（起動時パスワード認証画面の追加）
 
 ---
 
@@ -626,6 +632,30 @@ dart analyze          # 静的解析
 ### pubspec.yaml の追加パッケージ
 - `intl` — helpers.dart の日付フォーマットで使用
 - `path` — storage_service.dart のDBパス生成で使用
+
+### auth_service.dart の実装詳細
+- `flutter_secure_storage` でマスターパスワードのハッシュ+ソルトを保存（パスワード自体は保存しない）
+- `local_auth` で生体認証（指紋・顔）。`biometricOnly: false` で端末のPIN/パターンもフォールバック許可
+- `setBiometricEnabled` / `isBiometricEnabled` で生体認証ON/OFFをユーザーが切り替え可能
+- `clearAll` でアプリリセット時に認証データを全削除
+- **TODO: main.dart に組み込んで起動時認証画面を追加する**
+
+### backup_service.dart の実装詳細
+- `exportToString` / `importFromString` でローカルバックアップ対応（暗号化済みJSON文字列）
+- Google Drive連携: `google_sign_in` + `googleapis` (Drive v3 API)
+- Drive上に「SecureBox Backup」フォルダを自動作成、`securebox_backup.enc` として保存
+- 既存バックアップがあれば上書き更新（常に最新1つ）
+- `_AuthClient`（http.BaseClient継承）でOAuth認証ヘッダーを自動付与
+
+### Stripe APIテスト
+- `__tests__/create-checkout.test.js` — 5テスト（405, 400バリデーション2件, 正常系, 500エラー）
+- `__tests__/stripe-webhook.test.js` — 10テスト（405, 署名検証, 全6イベント, 未知イベント, 署名パラメータ）
+- Stripe SDKは `jest.mock` でモック化。実APIは不要
+- `npm test` で実行可能
+
+### APIコードの修正（CommonJS統一）
+- `api/create-checkout.js` と `api/stripe-webhook.js` で `export default` → `module.exports` に変更
+- Vercel Node.jsランタイムはどちらでも動くが、Jestとの互換性のためCommonJSに統一
 
 ### .gitignore に追加済み
 - Flutter関連: `.dart_tool/`, `.flutter-plugins`, `pubspec.lock` 等
