@@ -634,6 +634,62 @@ dart analyze          # 静的解析
 
 ---
 
+## ローカル環境セットアップ手順（⬜ 未実施）
+
+> **Claudeへ: ユーザーがローカルPC（Mac/Windows）でClaude Codeを使い始めたら、**
+> **この手順をアナウンスして一緒にセットアップすること。**
+
+### 1. Flutter 環境
+
+```bash
+flutter pub get
+flutter test                    # skip以外のテストが通ることを確認
+flutter run                     # エミュレータ or 実機で起動確認
+```
+
+### 2. gh CLI（GitHub連携）
+
+```bash
+# インストール
+brew install gh                 # Mac
+# or: winget install GitHub.cli  # Windows
+
+# 認証
+gh auth login                   # ブラウザでGitHubにログイン
+
+# 確認
+gh auth status
+```
+
+### 3. Claude Code MCP サーバー設定
+
+ローカルで `claude` コマンドが使える状態で実行:
+
+```bash
+# GitHub MCP — Issue/PR操作、コードレビューをClaude Codeから直接実行
+claude mcp add github -- npx @modelcontextprotocol/server-github
+
+# 設定確認
+claude mcp list
+```
+
+設定後にできること:
+- `gh` を使わずClaude Code内からIssue作成・PR操作
+- コードレビューの自動化
+- リポジトリ横断の検索
+
+### 4. セットアップ完了後
+
+- [ ] `flutter pub get` 成功
+- [ ] `flutter test` パス（skipテスト以外）
+- [ ] `flutter run` でアプリ起動確認
+- [ ] `gh auth status` で認証済み
+- [ ] `claude mcp list` でGitHub MCP有効
+
+完了したらこのセクションのステータスを ✅ に更新すること。
+
+---
+
 **このファイルは常に最新状態に保つこと。**
 **仕様変更があればこのファイルを更新。**
 **開発が進んだら進捗ステータス（✅/⬜）を更新すること。**
