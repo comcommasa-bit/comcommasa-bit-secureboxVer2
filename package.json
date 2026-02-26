@@ -1,0 +1,19 @@
+{
+  "name": "securebox-backend",
+  "version": "1.0.0",
+  "description": "SecureBox backend API for Stripe payments",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "stripe": "^14.12.0"
+  },
+  "devDependencies": {
+    "@vercel/node": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
