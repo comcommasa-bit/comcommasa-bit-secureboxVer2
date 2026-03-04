@@ -6,7 +6,7 @@ library;
 import 'package:flutter/material.dart';
 
 import 'config/constants.dart';
-import 'screens/list_screen.dart';
+import 'screens/auth_screen.dart';
 
 void main() {
   runApp(const SecureBoxApp());
@@ -28,7 +28,7 @@ class SecureBoxApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const ListScreen(),
+      home: const AuthScreen(),
     );
   }
 }

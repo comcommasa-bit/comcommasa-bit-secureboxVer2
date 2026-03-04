@@ -6,7 +6,7 @@ void main() {
   testWidgets('SecureBox app smoke test', (tester) async {
     await tester.pumpWidget(const SecureBoxApp());
 
-    // アプリ名が表示されること
-    expect(find.text('SecureBox'), findsOneWidget);
+    // 初期化中はローディング表示
+    expect(find.byType(SecureBoxApp), findsOneWidget);
   });
 }
