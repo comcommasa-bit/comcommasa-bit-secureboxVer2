@@ -146,10 +146,14 @@ class CryptoService {
       ),
     );
 
-    return encrypter.decrypt64(
-      data,
-      iv: encrypt.IV(Uint8List.fromList(iv)),
-    );
+    try {
+      return encrypter.decrypt64(
+        data,
+        iv: encrypt.IV(Uint8List.fromList(iv)),
+      );
+    } catch (e) {
+      throw ArgumentError('復号に失敗しました: $e');
+    }
   }
 
   /// マスターパスワードのハッシュを生成する（検証用）
