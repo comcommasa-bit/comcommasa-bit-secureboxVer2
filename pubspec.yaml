@@ -37,6 +37,8 @@ dependencies:
 
   # ローカルDB
   sqflite: ^2.3.0
+  # パス操作（sqfliteで使用）
+  path: ^1.9.0
   # AES-256暗号化
   encrypt: ^5.0.3
   # PBKDF2鍵導出
