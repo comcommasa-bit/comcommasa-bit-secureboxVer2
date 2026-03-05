@@ -70,7 +70,9 @@ body {
 }
 
 .logo-icon {
-  font-size: 20px;
+  display: flex;
+  align-items: center;
+  color: var(--accent);
 }
 
 .header-right {
@@ -440,9 +442,11 @@ body {
 }
 
 .empty-icon {
-  font-size: 48px;
   margin-bottom: 16px;
   opacity: 0.5;
+  display: flex;
+  justify-content: center;
+  color: var(--text-tertiary);
 }
 
 .empty-title {
@@ -465,7 +469,7 @@ body {
   <header class="app-header">
     <div class="header-left">
       <div class="logo">
-        <span class="logo-icon">&#x1f431;</span>
+        <span class="logo-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><rect x="10" y="10" width="4" height="5" rx="1"/><circle cx="12" cy="8" r="1.5"/></svg></span>
         <span>パスワード保管庫</span>
       </div>
     </div>
@@ -481,7 +485,7 @@ body {
 
   <div class="content" id="keys-container">
     <div class="empty-state">
-      <div class="empty-icon">&#x1f431;</div>
+      <div class="empty-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><rect x="10" y="10" width="4" height="5" rx="1"/><circle cx="12" cy="8" r="1.5"/></svg></div>
       <div class="empty-title">キーがありません</div>
       <div class="empty-description">＋ボタンから最初のキーを追加しましょう</div>
     </div>
@@ -625,7 +629,7 @@ function renderList() {
   if (keys.length === 0) {
     container.innerHTML = `
       <div class="empty-state">
-        <div class="empty-icon">&#x1f431;</div>
+        <div class="empty-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><rect x="10" y="10" width="4" height="5" rx="1"/><circle cx="12" cy="8" r="1.5"/></svg></div>
         <div class="empty-title">キーがありません</div>
         <div class="empty-description">＋ボタンから最初のキーを追加しましょう</div>
       </div>

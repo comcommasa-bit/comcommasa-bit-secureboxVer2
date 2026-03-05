@@ -240,7 +240,16 @@ FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nxxxxx\n-----END PRIVATE KEY--
 ## フロントエンド開発について
 
 フロントエンド（Flutter）は `CLAUDE-1.md` に詳細な設計書がある。
-以前作成したアーティファクト（UI部分）があれば、それをベースに `CLAUDE-1.md` の開発順序に従って実装を進める。
+
+### UI参考資料
+**`reference/securebox-list.html`** に完全なUIモックアップがある。Flutter実装時は必ずこのファイルを参照すること：
+- ダークテーマの配色（CSS変数）
+- リスト画面・詳細画面・編集画面の3画面構成
+- カテゴリ別表示、FAB、トースト通知のUI仕様
+- タップでコピー/長押しで表示のインタラクション
+- SVGアイコンのデザイン（盾+鍵のロゴ等）
+
+このHTMLをブラウザで開けば、完成イメージを確認できる。
 
 フロントとバックエンドの接続ポイント:
 - `api/create-checkout` を呼ぶのはFlutter側の課金画面
