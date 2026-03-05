@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SecureBox - パスワード保管庫</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg-primary: #0d0d0d;
+  --bg-secondary: #1a1a1a;
+  --bg-tertiary: #242424;
+  --bg-hover: #2a2a2a;
+  --border: #2a2a2a;
+  --border-subtle: #1f1f1f;
+  --text-primary: #ebebeb;
+  --text-secondary: #9b9b9b;
+  --text-tertiary: #6b6b6b;
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --danger: #ef4444;
+  --success: #10b981;
+
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Menlo', monospace;
+  --radius: 8px;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Header */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.logo-icon {
+  font-size: 20px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-icon:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.btn-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Content */
+.content {
+  min-height: calc(100vh - 65px);
+}
+
+/* Category Header */
+.category-header {
+  padding: 16px 20px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: var(--bg-primary);
+}
+
+/* List Items */
+.key-list-item {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-subtle);
+  cursor: pointer;
+  transition: background 0.15s;
+  user-select: none;
+}
+
+.key-list-item:hover {
+  background: var(--bg-hover);
+}
+
+.key-list-item:active {
+  background: var(--bg-tertiary);
+}
+
+.key-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.key-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.key-subtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.key-arrow {
+  width: 20px;
+  height: 20px;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
+/* Detail View */
+.detail-view {
+  display: none;
+  flex-direction: column;
+  position: fixed;
+  inset: 0;
+  background: var(--bg-primary);
+  z-index: 100;
+}
+
+.detail-view.active {
+  display: flex;
+}
+
+.detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+}
+
+.detail-title {
+  font-size: 16px;
+  font-weight: 600;
+  flex: 1;
+  text-align: center;
+}
+
+.detail-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.field-group {
+  margin-bottom: 24px;
+}
+
+.field-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  display: block;
+}
+
+.field-value {
+  padding: 12px 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-primary);
+  font-size: 14px;
+  word-break: break-all;
+  position: relative;
+  cursor: text;
+}
+
+.field-value.password {
+  font-family: var(--font-mono);
+  letter-spacing: 2px;
+  user-select: none;
+}
+
+.field-value.copiable {
+  cursor: pointer;
+}
+
+.field-value.copiable:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent);
+}
+
+.field-value.textarea {
+  min-height: 100px;
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+
+.copy-hint {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-top: 6px;
+}
+
+/* Edit View */
+.edit-view {
+  display: none;
+  flex-direction: column;
+  position: fixed;
+  inset: 0;
+  background: var(--bg-primary);
+  z-index: 200;
+}
+
+.edit-view.active {
+  display: flex;
+}
+
+.edit-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+}
+
+.edit-title {
+  font-size: 16px;
+  font-weight: 600;
+  flex: 1;
+  text-align: center;
+}
+
+.edit-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  display: block;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: var(--font-sans);
+  outline: none;
+  transition: all 0.15s;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  border-color: var(--accent);
+  background: var(--bg-tertiary);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 120px;
+  line-height: 1.6;
+}
+
+.input-with-toggle {
+  position: relative;
+}
+
+.toggle-visibility {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  padding: 4px;
+}
+
+.toggle-visibility:hover {
+  color: var(--accent);
+}
+
+/* Buttons */
+.btn {
+  padding: 10px 20px;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+}
+
+.btn-danger {
+  background: transparent;
+  color: var(--danger);
+  border: 1px solid var(--danger);
+}
+
+.btn-danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* FAB */
+.fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  transition: all 0.15s;
+  z-index: 50;
+}
+
+.fab:hover {
+  background: var(--accent-hover);
+  transform: scale(1.05);
+}
+
+.fab svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 20px;
+  font-size: 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  opacity: 0;
+  transition: all 0.3s;
+}
+
+.toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+.toast.success {
+  border-color: var(--success);
+  color: var(--success);
+}
+
+/* Empty State */
+.empty-state {
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.empty-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.empty-description {
+  font-size: 14px;
+  color: var(--text-tertiary);
+}
+</style>
+</head>
+<body>
+
+<!-- Main List View -->
+<div id="list-view">
+  <header class="app-header">
+    <div class="header-left">
+      <div class="logo">
+        <span class="logo-icon">&#x1f431;</span>
+        <span>パスワード保管庫</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="btn-icon" onclick="openSettings()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M12 1v6m0 6v6m5.656-15.656l-4.242 4.242m-2.828 2.828l-4.242 4.242M23 12h-6m-6 0H1m15.656 5.656l-4.242-4.242m-2.828-2.828l-4.242-4.242"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="content" id="keys-container">
+    <div class="empty-state">
+      <div class="empty-icon">&#x1f431;</div>
+      <div class="empty-title">キーがありません</div>
+      <div class="empty-description">＋ボタンから最初のキーを追加しましょう</div>
+    </div>
+  </div>
+
+  <button class="fab" onclick="openAddView()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <line x1="12" y1="5" x2="12" y2="19"></line>
+      <line x1="5" y1="12" x2="19" y2="12"></line>
+    </svg>
+  </button>
+</div>
+
+<!-- Detail View -->
+<div class="detail-view" id="detail-view">
+  <header class="detail-header">
+    <button class="btn-icon" onclick="closeDetail()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+    </button>
+    <div class="detail-title">詳細</div>
+    <button class="btn-icon" onclick="openEdit()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+      </svg>
+    </button>
+  </header>
+
+  <div class="detail-content" id="detail-content">
+    <!-- Detail fields will be inserted here -->
+  </div>
+</div>
+
+<!-- Edit View -->
+<div class="edit-view" id="edit-view">
+  <header class="edit-header">
+    <button class="btn-icon" onclick="closeEdit()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+    <div class="edit-title" id="edit-title">編集</div>
+    <button class="btn-icon" onclick="saveEdit()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+    </button>
+  </header>
+
+  <div class="edit-content">
+    <div class="form-group">
+      <label class="form-label">タイトル</label>
+      <input type="text" class="form-input" id="edit-name" placeholder="例: Stripe 本番用秘密鍵">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">カテゴリ</label>
+      <select class="form-select" id="edit-category">
+        <option value="">カテゴリなし</option>
+        <option value="stripe">Stripe</option>
+        <option value="aws">AWS</option>
+        <option value="openai">OpenAI</option>
+        <option value="google">Google</option>
+        <option value="github">GitHub</option>
+        <option value="other">その他</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">キーの種類</label>
+      <select class="form-select" id="edit-type">
+        <option value="secret">Secret Key（シークレットキー）</option>
+        <option value="api">API Key（エーピーアイキー）</option>
+        <option value="token">Access Token（アクセストークン）</option>
+        <option value="password">Password（パスワード）</option>
+        <option value="other">その他</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">キーの値</label>
+      <div class="input-with-toggle">
+        <input type="password" class="form-input" id="edit-value" placeholder="キーを入力">
+        <button type="button" class="toggle-visibility" onclick="toggleEditPassword()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">メモ</label>
+      <textarea class="form-textarea" id="edit-memo" placeholder="使用目的や注意点を記入"></textarea>
+    </div>
+
+    <div class="form-group">
+      <button class="btn btn-danger" onclick="deleteKey()" style="width: 100%;">
+        削除
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// Data
+let keys = [];
+let currentKeyId = null;
+let editMode = 'add';
+const MAX_FREE_KEYS = 10;
+
+// Initialize
+function init() {
+  keys = [
+    {
+      id: 1,
+      name: 'Stripe 本番用秘密鍵',
+      furigana: 'ストライプ ほんばんよう ひみつかぎ',
+      category: 'stripe',
+      type: 'secret',
+      value: 'sk_live_51Hx...abc123',
+      memo: '本番環境の決済処理に使用。月末の請求処理で必要。',
+      created: new Date('2025-12-01')
+    }
+  ];
+  renderList();
+}
+
+// Render list
+function renderList() {
+  const container = document.getElementById('keys-container');
+
+  if (keys.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">&#x1f431;</div>
+        <div class="empty-title">キーがありません</div>
+        <div class="empty-description">＋ボタンから最初のキーを追加しましょう</div>
+      </div>
+    `;
+    return;
+  }
+
+  const grouped = {};
+  keys.forEach(key => {
+    const cat = key.category || 'none';
+    if (!grouped[cat]) grouped[cat] = [];
+    grouped[cat].push(key);
+  });
+
+  let html = '';
+
+  Object.keys(grouped).forEach(category => {
+    const categoryName = category === 'none' ? 'カテゴリなし' : getCategoryName(category);
+    html += `<div class="category-header">${categoryName}</div>`;
+
+    grouped[category].forEach(key => {
+      html += `
+        <div class="key-list-item" onclick="showDetail(${key.id})">
+          <div class="key-info">
+            <div class="key-title">${key.name}</div>
+            <div class="key-subtitle">${key.furigana || ''}</div>
+          </div>
+          <svg class="key-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </div>
+      `;
+    });
+  });
+
+  container.innerHTML = html;
+}
+
+function getCategoryName(cat) {
+  const names = {
+    stripe: 'Stripe',
+    aws: 'AWS',
+    openai: 'OpenAI',
+    google: 'Google',
+    github: 'GitHub',
+    other: 'その他'
+  };
+  return names[cat] || cat;
+}
+
+function showDetail(id) {
+  const key = keys.find(k => k.id === id);
+  if (!key) return;
+
+  currentKeyId = id;
+
+  const typeLabels = {
+    secret: 'Secret Key（シークレットキー）',
+    api: 'API Key（エーピーアイキー）',
+    token: 'Access Token（アクセストークン）',
+    password: 'Password（パスワード）',
+    other: 'その他'
+  };
+
+  document.getElementById('detail-content').innerHTML = `
+    <div class="field-group">
+      <label class="field-label">タイトル</label>
+      <div class="field-value">${key.name}</div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">キーの値</label>
+      <div class="field-value password copiable" data-value="${key.value}">
+        &#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;
+      </div>
+      <div class="copy-hint">タップでコピー / 長押しで表示</div>
+    </div>
+
+    ${key.category ? `
+    <div class="field-group">
+      <label class="field-label">カテゴリ</label>
+      <div class="field-value">${getCategoryName(key.category)}</div>
+    </div>
+    ` : ''}
+
+    ${key.type ? `
+    <div class="field-group">
+      <label class="field-label">キーの種類</label>
+      <div class="field-value">${typeLabels[key.type] || key.type}</div>
+    </div>
+    ` : ''}
+
+    ${key.memo ? `
+    <div class="field-group">
+      <label class="field-label">メモ</label>
+      <div class="field-value textarea">${key.memo}</div>
+    </div>
+    ` : ''}
+  `;
+
+  const valueField = document.querySelector('.field-value.copiable');
+  let pressTimer;
+
+  valueField.addEventListener('click', function() {
+    const value = this.dataset.value;
+    copyToClipboard(value);
+  });
+
+  valueField.addEventListener('mousedown', function() {
+    pressTimer = setTimeout(() => {
+      const value = this.dataset.value;
+      this.textContent = value;
+      this.classList.remove('password');
+
+      setTimeout(() => {
+        this.textContent = '&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;';
+        this.classList.add('password');
+      }, 3000);
+    }, 500);
+  });
+
+  valueField.addEventListener('mouseup', function() {
+    clearTimeout(pressTimer);
+  });
+
+  document.getElementById('detail-view').classList.add('active');
+}
+
+function closeDetail() {
+  document.getElementById('detail-view').classList.remove('active');
+  currentKeyId = null;
+}
+
+function openEdit() {
+  const key = keys.find(k => k.id === currentKeyId);
+  if (!key) return;
+
+  editMode = 'edit';
+  document.getElementById('edit-title').textContent = '編集';
+
+  document.getElementById('edit-name').value = key.name;
+  document.getElementById('edit-category').value = key.category || '';
+  document.getElementById('edit-type').value = key.type || 'secret';
+  document.getElementById('edit-value').value = key.value;
+  document.getElementById('edit-memo').value = key.memo || '';
+
+  document.getElementById('edit-view').classList.add('active');
+}
+
+function openAddView() {
+  if (keys.length >= MAX_FREE_KEYS) {
+    showToast('無料プランは10個まで。プロプランにアップグレードしてください');
+    return;
+  }
+
+  editMode = 'add';
+  currentKeyId = null;
+  document.getElementById('edit-title').textContent = '新規追加';
+
+  document.getElementById('edit-name').value = '';
+  document.getElementById('edit-category').value = '';
+  document.getElementById('edit-type').value = 'secret';
+  document.getElementById('edit-value').value = '';
+  document.getElementById('edit-memo').value = '';
+
+  document.getElementById('edit-view').classList.add('active');
+}
+
+function saveEdit() {
+  const name = document.getElementById('edit-name').value.trim();
+  const category = document.getElementById('edit-category').value;
+  const type = document.getElementById('edit-type').value;
+  const value = document.getElementById('edit-value').value;
+  const memo = document.getElementById('edit-memo').value.trim();
+
+  if (!name || !value) {
+    showToast('タイトルとキーの値は必須です');
+    return;
+  }
+
+  if (editMode === 'add') {
+    const newKey = {
+      id: Date.now(),
+      name,
+      furigana: name,
+      category,
+      type,
+      value,
+      memo,
+      created: new Date()
+    };
+    keys.push(newKey);
+    showToast('キーを追加しました', 'success');
+  } else {
+    const key = keys.find(k => k.id === currentKeyId);
+    if (key) {
+      key.name = name;
+      key.furigana = name;
+      key.category = category;
+      key.type = type;
+      key.value = value;
+      key.memo = memo;
+      showToast('変更を保存しました', 'success');
+    }
+  }
+
+  closeEdit();
+  renderList();
+
+  if (editMode === 'edit') {
+    showDetail(currentKeyId);
+  }
+}
+
+function closeEdit() {
+  document.getElementById('edit-view').classList.remove('active');
+}
+
+function deleteKey() {
+  if (!currentKeyId) return;
+
+  if (confirm('本当に削除しますか？')) {
+    keys = keys.filter(k => k.id !== currentKeyId);
+    showToast('削除しました', 'success');
+    closeEdit();
+    closeDetail();
+    renderList();
+  }
+}
+
+function toggleEditPassword() {
+  const input = document.getElementById('edit-value');
+  input.type = input.type === 'password' ? 'text' : 'password';
+}
+
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('コピーしました', 'success');
+  });
+}
+
+function showToast(message, type = '') {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.className = 'toast show ' + type;
+
+  setTimeout(() => {
+    toast.classList.remove('show');
+  }, 2000);
+}
+
+function openSettings() {
+  showToast('設定（開発中）');
+}
+
+init();
+</script>
+
+</body>
+</html>
