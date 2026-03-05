@@ -101,6 +101,9 @@ SQLite（ローカル保存）
 - 詳細画面
 - 編集画面（分離型: 詳細→編集ボタン→編集画面→保存）
 - レスポンシブデザイン
+- **アプリアイコン**: 猫が鍵を抱えているデザイン（`assets/icon/app-icon.png`）
+  - `flutter_launcher_icons` パッケージで Android/iOS 両対応で生成すること
+  - 詳細は `assets/icon/README.md` を参照
 
 #### 将来の拡張性（有料版対応の準備）
 - プラン判定機能
