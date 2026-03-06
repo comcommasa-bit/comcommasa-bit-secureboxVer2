@@ -45,9 +45,11 @@ SQLite（ローカル保存）
 ```
 
 ### 暗号化方式
-- **AES-256-GCM**
+- **AES-256-CBC**（encryptパッケージ使用）
 - **PBKDF2** 鍵導出（60万回イテレーション）
 - マスターパスワードから暗号化キーを生成
+- パスワードハッシュ・ソルトは `flutter_secure_storage` で保存
+- バックアップファイル: JSON全体を暗号化した .sbx 形式
 
 ---
 
@@ -150,9 +152,11 @@ securebox/
 │   ├── models/
 │   │   └── key_model.dart              # キーデータモデル
 │   ├── screens/
+│   │   ├── auth_screen.dart            # 認証画面（起動時）
 │   │   ├── list_screen.dart            # 一覧画面
 │   │   ├── detail_screen.dart          # 詳細画面
-│   │   └── edit_screen.dart            # 編集画面
+│   │   ├── edit_screen.dart            # 編集画面
+│   │   └── settings_screen.dart        # 設定画面
 │   ├── widgets/
 │   │   ├── key_list_item.dart          # リストアイテム
 │   │   ├── key_detail_card.dart        # 詳細カード
@@ -161,7 +165,7 @@ securebox/
 │   │   ├── crypto_service.dart         # 暗号化・復号化
 │   │   ├── storage_service.dart        # SQLite操作
 │   │   ├── backup_service.dart         # バックアップ機能
-│   │   ├── auth_service.dart           # 生体認証
+│   │   ├── auth_service.dart           # 認証（マスターPW＋生体認証）
 │   │   └── search_service.dart         # 検索機能
 │   └── utils/
 │       ├── validators.dart             # バリデーション
@@ -208,12 +212,13 @@ securebox/
 ### lib/services/crypto_service.dart
 - **役割**: 暗号化・復号化
 - **機能**:
-  - AES-256-GCM暗号化
-  - PBKDF2鍵導出（60万回）
-  - マスターパスワード検証
+  - AES-256-CBC暗号化（salt:iv:data形式で出力）
+  - PBKDF2鍵導出（60万回イテレーション、32バイトキー）
+  - パスワードハッシュ生成・検証
+  - ソルト・IV生成（16バイト乱数）
 - **使用パッケージ**: `encrypt`, `crypto`
 - **依存**: なし
-- **完成条件**: 暗号化・復号化テスト成功
+- **状態**: ✅ 完成（17テスト通過）
 
 ### lib/services/storage_service.dart
 - **役割**: データの保存・読み込み
@@ -224,37 +229,58 @@ securebox/
   - 保存数制限チェック
 - **使用パッケージ**: `sqflite`
 - **依存**: crypto_service.dart（暗号化済みデータを保存）
-- **完成条件**: データ保存・読み込みテスト成功
+- **状態**: ✅ 完成（11テスト通過）
+
+### lib/screens/auth_screen.dart
+- **役割**: 認証画面（アプリ起動時）
+- **機能**:
+  - 初回: マスターパスワード設定（確認入力あり）
+  - 2回目以降: パスワード入力 or 生体認証でログイン
+  - 認証成功後 ListScreen へ遷移（pushAndRemoveUntil）
+- **依存**: auth_service.dart, list_screen.dart
+- **状態**: ✅ 完成
+
+### lib/screens/settings_screen.dart
+- **役割**: 設定画面
+- **機能**:
+  - 生体認証ON/OFF切り替え
+  - データバックアップ（.sbxエクスポート）
+  - データ復元（.sbxインポート）
+  - 全データリセット
+  - ログアウト
+- **依存**: auth_service.dart, backup_service.dart, storage_service.dart
+- **状態**: ✅ 完成
 
 ### lib/services/auth_service.dart
-- **役割**: 生体認証
+- **役割**: 認証（マスターパスワード＋生体認証）
 - **機能**:
-  - 指紋認証
-  - 顔認証
-  - 認証状態管理
-- **使用パッケージ**: `local_auth`
-- **依存**: なし
-- **完成条件**: 認証テスト成功
+  - マスターパスワード保存・検証（flutter_secure_storage）
+  - パスワードハッシュ＋ソルト管理
+  - 指紋・顔認証（local_auth）
+  - 生体認証ON/OFF設定の永続化
+- **使用パッケージ**: `local_auth`, `flutter_secure_storage`
+- **依存**: crypto_service.dart
+- **状態**: ✅ 完成
 
 ### lib/services/backup_service.dart
 - **役割**: バックアップ機能
 - **機能**:
-  - Google Driveへエクスポート
-  - Google Driveからインポート
-  - ローカルファイルダウンロード
-  - ローカルファイルアップロード
-- **使用パッケージ**: `google_sign_in`, `googleapis`
+  - ローカルエクスポート（JSON → 暗号化 → .sbxファイル、FilePicker使用）
+  - ローカルインポート（.sbx → 復号 → ID除去 → DB挿入）
+  - インポート結果: `({int imported, int skipped})` レコード型
+  - Google Drive連携（Pro版のみ、現在はException throw）
+- **使用パッケージ**: `file_picker`
 - **依存**: storage_service.dart, crypto_service.dart
-- **完成条件**: バックアップ・復元テスト成功
+- **状態**: ✅ 完成（5テスト通過）
 
 ### lib/services/search_service.dart
 - **役割**: 検索機能
 - **機能**:
-  - キーワード検索
+  - キーワード検索（名前・カテゴリ・タイプ・メモの部分一致）
   - カテゴリフィルタリング
   - タグフィルタリング（有料版）
 - **依存**: なし
-- **完成条件**: 検索テスト成功
+- **状態**: ✅ 完成
 
 ### lib/screens/list_screen.dart
 - **役割**: 一覧画面
@@ -331,7 +357,7 @@ securebox/
 
 ## 開発順序
 
-### フェーズ1: 基盤（独立して完成可能）
+### フェーズ1: 基盤（独立して完成可能） ✅ 完了
 1. **constants.dart** - 設定定義
 2. **key_model.dart** - データモデル
 3. **crypto_service.dart** - 暗号化機能
@@ -339,24 +365,33 @@ securebox/
 5. **validators.dart** - バリデーション
 6. **helpers.dart** - ヘルパー関数
 
-### フェーズ2: コア機能（基盤依存）
+### フェーズ2: コア機能（基盤依存） ✅ 完了
 7. **storage_service.dart** - データ保存（crypto依存）
 8. **search_service.dart** - 検索機能
 
-### フェーズ3: UI（コア機能依存）
+### フェーズ3: UI（コア機能依存） ✅ 完了
 9. **key_list_item.dart** - リストアイテムウィジェット
 10. **key_detail_card.dart** - 詳細カードウィジェット
 11. **list_screen.dart** - 一覧画面（storage, search依存）
 12. **detail_screen.dart** - 詳細画面（storage依存）
 13. **edit_screen.dart** - 編集画面（storage依存）
 
-### フェーズ4: 高度な機能
-14. **auth_service.dart** - 生体認証
+### フェーズ4: 高度な機能 ✅ 完了
+14. **auth_service.dart** - 認証（マスターPW＋生体認証）
 15. **backup_service.dart** - バックアップ（storage, crypto依存）
 
-### フェーズ5: 統合
-16. **main.dart** - 全体統合・ルーティング
-17. 最終調整・テスト
+### フェーズ5: 統合 ✅ 完了
+16. **auth_screen.dart** - 認証画面（起動時）
+17. **main.dart** - 全体統合・ルーティング
+18. ユニットテスト48件 全通過
+
+### フェーズ5.5: 設定画面 ✅ 完了
+19. **settings_screen.dart** - 設定画面
+20. **list_screen.dart** - 設定ボタン追加
+
+### フェーズ6: バックエンド（予定）
+21. Vercel + Stripe 決済
+22. Google Drive連携（Pro版）
 
 ---
 
@@ -553,10 +588,10 @@ dart analyze          # 静的解析
 
 ## 次のステップ
 
-1. Flutter環境構築
-2. プロジェクト作成（`flutter create securebox`）
-3. 依存パッケージ追加（`pubspec.yaml`）
-4. フェーズ1から順番に実装開始
+1. **settings_screen.dart** 作成（生体認証ON/OFF、バックアップ、復元、リセット、ログアウト）
+2. **list_screen.dart** にAppBar設定ボタン追加
+3. 実機テスト（認証フロー、バックアップ/復元）
+4. フェーズ6: バックエンド（Vercel + Stripe決済）
 
 ---
 

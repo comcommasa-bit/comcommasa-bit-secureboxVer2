@@ -13,6 +13,7 @@ import '../services/storage_service.dart';
 import '../widgets/key_list_item.dart';
 import 'detail_screen.dart';
 import 'edit_screen.dart';
+import 'settings_screen.dart';
 
 /// キー一覧画面
 class ListScreen extends StatefulWidget {
@@ -102,6 +103,20 @@ class _ListScreenState extends State<ListScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(AppConstants.appName),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () async {
+              await Navigator.push<void>(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const SettingsScreen(),
+                ),
+              );
+              _loadKeys();
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
