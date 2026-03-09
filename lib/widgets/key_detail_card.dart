@@ -95,6 +95,14 @@ class _KeyDetailCardState extends State<KeyDetailCard> {
             _buildInfoRow('カテゴリ', widget.keyModel.category),
             _buildInfoRow('種類', widget.keyModel.type),
 
+            // ユーザー名・メールアドレス
+            if (widget.keyModel.username != null &&
+                widget.keyModel.username!.isNotEmpty)
+              _buildInfoRow('ユーザー名', widget.keyModel.username!),
+            if (widget.keyModel.email != null &&
+                widget.keyModel.email!.isNotEmpty)
+              _buildInfoRow('メール', widget.keyModel.email!),
+
             const SizedBox(height: 12),
 
             // キー値（タップでコピー / 長押しで表示）

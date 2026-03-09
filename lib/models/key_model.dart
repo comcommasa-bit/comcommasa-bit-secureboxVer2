@@ -26,6 +26,12 @@ class KeyModel {
   /// メモ（任意）
   final String? memo;
 
+  /// ユーザー名（パスワード保管用、任意）
+  final String? username;
+
+  /// メールアドレス（パスワード保管用、任意）
+  final String? email;
+
   /// 作成日時
   final DateTime createdAt;
 
@@ -51,6 +57,8 @@ class KeyModel {
     required this.type,
     required this.value,
     this.memo,
+    this.username,
+    this.email,
     required this.createdAt,
     required this.updatedAt,
     this.tags,
@@ -66,6 +74,8 @@ class KeyModel {
       type: map['type'] as String,
       value: map['value'] as String,
       memo: map['memo'] as String?,
+      username: map['username'] as String?,
+      email: map['email'] as String?,
       createdAt: DateTime.parse(map['created_at'] as String),
       updatedAt: DateTime.parse(map['updated_at'] as String),
       tags: map['tags'] != null
@@ -87,6 +97,8 @@ class KeyModel {
       'type': type,
       'value': value,
       'memo': memo,
+      'username': username,
+      'email': email,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
       'tags': tags != null ? jsonEncode(tags) : null,
@@ -102,6 +114,8 @@ class KeyModel {
     String? type,
     String? value,
     String? memo,
+    String? username,
+    String? email,
     DateTime? createdAt,
     DateTime? updatedAt,
     List<String>? tags,
@@ -114,6 +128,8 @@ class KeyModel {
       type: type ?? this.type,
       value: value ?? this.value,
       memo: memo ?? this.memo,
+      username: username ?? this.username,
+      email: email ?? this.email,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       tags: tags ?? this.tags,

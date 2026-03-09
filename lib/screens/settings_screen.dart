@@ -5,7 +5,9 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+import '../main.dart';
 import '../services/auth_service.dart';
 import '../services/backup_service.dart';
 import '../services/storage_service.dart';
@@ -224,6 +226,47 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     subtitle: Text('このデバイスでは利用できません'),
                     enabled: false,
                   ),
+
+                const Divider(),
+
+                // ─── 外観 ───
+                const _SectionHeader(title: '外観'),
+                ListTile(
+                  leading: const Icon(Icons.dark_mode),
+                  title: const Text('ダークモード'),
+                  trailing: DropdownButton<ThemeMode>(
+                    value: themeNotifier.value,
+                    underline: const SizedBox.shrink(),
+                    onChanged: (mode) async {
+                      if (mode == null) return;
+                      themeNotifier.value = mode;
+                      const storage = FlutterSecureStorage();
+                      await storage.write(
+                        key: 'theme_mode',
+                        value: mode == ThemeMode.dark
+                            ? 'dark'
+                            : mode == ThemeMode.light
+                                ? 'light'
+                                : 'system',
+                      );
+                      if (mounted) setState(() {});
+                    },
+                    items: const [
+                      DropdownMenuItem(
+                        value: ThemeMode.system,
+                        child: Text('自動'),
+                      ),
+                      DropdownMenuItem(
+                        value: ThemeMode.light,
+                        child: Text('ライト'),
+                      ),
+                      DropdownMenuItem(
+                        value: ThemeMode.dark,
+                        child: Text('ダーク'),
+                      ),
+                    ],
+                  ),
+                ),
 
                 const Divider(),
 

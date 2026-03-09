@@ -39,12 +39,13 @@ class StorageService {
 
     return openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
     );
   }
 
-  /// テーブルを作成する
+  /// テーブルを作成する（新規インストール時）
   Future<void> _onCreate(Database db, int version) async {
     await db.execute('''
       CREATE TABLE keys(
@@ -54,12 +55,26 @@ class StorageService {
         type TEXT NOT NULL,
         value TEXT NOT NULL,
         memo TEXT,
+        username TEXT,
+        email TEXT,
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL,
         tags TEXT,
         expires_at TEXT
       )
     ''');
+  }
+
+  /// DBマイグレーション（既存ユーザーのアップグレード時）
+  Future<void> _onUpgrade(
+    Database db,
+    int oldVersion,
+    int newVersion,
+  ) async {
+    if (oldVersion < 2) {
+      await db.execute('ALTER TABLE keys ADD COLUMN username TEXT');
+      await db.execute('ALTER TABLE keys ADD COLUMN email TEXT');
+    }
   }
 
   /// キーを新規追加する

@@ -9,7 +9,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart';
 
 import '../config/constants.dart';
 import '../models/key_model.dart';
@@ -58,12 +57,18 @@ class BackupService {
         '${now.day.toString().padLeft(2, '0')}';
     final fileName = 'securebox_$dateStr.sbx';
 
-    // ファイル保存ダイアログ
-    return FilePicker.platform.saveFile(
+    // ファイル保存
+    final savePath = await FilePicker.platform.saveFile(
       dialogTitle: 'バックアップファイルを保存',
       fileName: fileName,
-      bytes: Uint8List.fromList(utf8.encode(encryptedData)),
     );
+
+    if (savePath == null) return null;
+
+    // ファイルに書き込み
+    final file = File(savePath);
+    await file.writeAsString(encryptedData);
+    return savePath;
   }
 
   /// ローカルファイルからインポートする
@@ -88,20 +93,20 @@ class BackupService {
       return (imported: 0, skipped: 0);
     }
 
-    final file = File(result.files.single.path!);
-    final encryptedContent = await file.readAsString();
-
-    // 復号
     String jsonString;
     try {
+      final file = File(result.files.single.path!);
+      // ファイル読み込み
+      final encryptedContent = await file.readAsString();
+
+      // 復号
       jsonString = CryptoService.decryptText(
         encryptedContent,
         password,
       );
     } catch (e) {
-      throw Exception(
-        'パスワードが間違っているか、ファイルが破損しています。',
-      );
+      // 詳細なエラーメッセージを含める
+      throw Exception('インポートに失敗しました: $e');
     }
 
     // データ復元（追加モード）

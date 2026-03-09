@@ -30,7 +30,9 @@ class SearchService {
       return key.name.toLowerCase().contains(q) ||
           key.category.toLowerCase().contains(q) ||
           key.type.toLowerCase().contains(q) ||
-          (key.memo?.toLowerCase().contains(q) ?? false);
+          (key.memo?.toLowerCase().contains(q) ?? false) ||
+          (key.username?.toLowerCase().contains(q) ?? false) ||
+          (key.email?.toLowerCase().contains(q) ?? false);
     }).toList();
   }
 
